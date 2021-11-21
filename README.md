@@ -178,14 +178,15 @@ This action is **Instanced**.
 
 Blocks execution of the block of code until the given time has passed.
 
+Because this action is Instanced it requires `FECFInstanceId`. 
+
+
 ``` cpp
 FFlow::TimeLock(this, 2.f, [this]()
 {
   // This code will run now, and won't be able to execute for 2 seconds.
-}, ECF_INSTANCEID);
+}, InstanceId);
 ```
-
-> Important! This action is instanced and it requires InstanceId. Use `ECF_INSTANCEID` macro to get valid instance id.
 
 # Extra settings
 
@@ -263,7 +264,19 @@ FECFInstanceId::GetStaticId(10);
 
 Obtains the Instance Id of the given, static value.
 
-> **Important!** A convenient macro **`ECF_INSTANCEID`** will return a compile-time generated static instance id.
+
+### Properly Using Instanced Ids
+
+If you want the action to be instanced per actor, keep `FECFInstanceId` in the header.  
+Assign new InstanceId using `GetDynamicId()` or use `Validate()` right before using it.
+
+If you want the action to be instanced globally, just use one of these:
+
+``` cpp
+FECFInstanceId InstanceId = FECFInstanceId::GetStaticId(10); // or any other number
+or
+static FECFInstanceId InstanceId = FECFInstanceId::GetDynamicId();
+```
 
 # Stopping actions
 
