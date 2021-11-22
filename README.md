@@ -182,6 +182,7 @@ Because this action is Instanced it requires `FECFInstanceId`.
 
 
 ``` cpp
+static FECFInstanceId InstanceId = FECFInstanceId::NewId();
 FFlow::TimeLock(this, 2.f, [this]()
 {
   // This code will run now, and won't be able to execute for 2 seconds.
@@ -237,45 +238,30 @@ FFlow::Delay(this, 2.f, [this]()
 
 # Instanced Actions
 
-Some actions can be Instanced. Instanced action is an action that has valid **FECFInstanceId**. 
-Such action can be executed onlye once. 
+Some actions can be Instanced. Instanced action is an action that has valid **FECFInstanceId**.  
+Such action can be executed only once. 
 
 As long as the action with given valid `FECFInstanceId` is running, no other action with the same `FECFInstanceId` can be executed.
 
-There are two InstanceId Types:
+InstanceId has two scopes:
 
-#### Dynamic Instance Id
+**Object**
 
-Can be obtained using the following function:
+This action is instanced per object. It means there can be multiple executions of this action, but only one per object.  
+This is the scope you will probably use most the time.
 
-``` cpp
-FECFInstanceId::GetDynamicId();
-```
+**Global**
 
-The Id will alway be the next available id.
+This action is instanced globally. It means that if any object executes this action this and any other object can't execute it again.
 
-#### Static Instance Id
+#### Obtaining InstanceId
 
-Can be obtained using the following function:
-
-``` cpp
-FECFInstanceId::GetStaticId(10);
-```
-
-Obtains the Instance Id of the given, static value.
-
-
-### Properly Using Instanced Ids
-
-If you want the action to be instanced per actor, keep `FECFInstanceId` in the header.  
-Assign new InstanceId using `GetDynamicId()` or use `Validate()` right before using it.
-
-If you want the action to be instanced globally, just use one of these:
+To get next valid InstanceId use the `NewId()` function
 
 ``` cpp
-FECFInstanceId InstanceId = FECFInstanceId::GetStaticId(10); // or any other number
+FECFInstanceId::NewId(); // for Object scoped InstanceId
 or
-static FECFInstanceId InstanceId = FECFInstanceId::GetDynamicId();
+FECFInstanceId::NewId(EECFInstanceIdScope::Global); // for Global scoped InstanceId
 ```
 
 # Stopping actions
@@ -289,18 +275,20 @@ FFlow::StopAction(GetWorld(), Handle); // <- stops this action!
 
 > Note that this function requires a pointer to the existing **World** in order to work properly.
 
-To stop a specific Instanced action the **FECFInstanceId** is needed.
-
-``` cpp
-FFlow::StopInstancedAction(GetWorld(), InstanceId);
-```
-
 You can also stop all of the actions from a specific owner or from everywhere. Stopped actions can launch their completion callbacks or not, depending on the given argument:
 
 ``` cpp
 FFlow::StopAllActions(GetWorld()); // <- stops all of the actions
 FFlow::StopAllActions(GetWorld(), true); // <- stops all of the actions and launch their callbacks
 FFlow::StopAllActions(GetWorld(), false, Owner); // <- stops all of the actions started from this specific owner
+```
+
+You can also stop a specific Instanced action with the **FECFInstanceId**:
+
+``` cpp
+FFlow::StopInstancedAction(GetWorld(), InstanceId); // <- stops all actions with this InstanceId
+FFlow::StopInstancedAction(GetWorld(), InstanceId, true); // <- stops all actions with this InstanceId and launch their callbacks
+FFlow::StopInstancedAction(GetWorld(), InstanceId, false, Owner); // <- stops action with this InstanceId running on this Owner
 ```
 
 You can also stop all of the **specific** actions. In this case you can also optionally specifiy an owner of this actions, or simply stop all of them.
@@ -411,11 +399,11 @@ Even though this was originally code only plugin I decided to move it's function
 
 ##### Stopping actions
 
-![stopping](https://user-images.githubusercontent.com/7863125/142775109-530ce7b7-9082-4051-849e-19ae0181be19.png)
+![stopac](https://user-images.githubusercontent.com/7863125/142932345-39ec3880-a47e-426c-8e9b-85e99ab5ba31.png)
 
 ##### Handles and InstanceIds
 
-![ecfhandles](https://user-images.githubusercontent.com/7863125/142775087-84dbfc36-d83d-4ccd-aefa-5a4be0255896.png)
+![handles](https://user-images.githubusercontent.com/7863125/142932359-3617c970-fc7b-4c50-aa54-c730309f3e0e.png)
 
 # Special thanks
 
